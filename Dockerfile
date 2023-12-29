@@ -15,12 +15,15 @@ ENV AWSCLI_VERSION='1.18.14'
 
 RUN pip install --quiet --no-cache-dir awscli==${AWSCLI_VERSION}
 
-# Atualizar os pacotes e instalar o ntpdate
+# Atualizar os pacotes e instalar o chrony
 RUN apk update && \
-    apk add --no-cache ntpdate
+    apk add --no-cache chrony
 
-# Comando para ajustar a data/hora do contêiner (executado no momento da construção da imagem)
-RUN ntpdate ntp.ubuntu.com
+# Configurar o chrony para sincronizar a hora (ajuste o arquivo de configuração conforme necessário)
+RUN echo "server ntp.ubuntu.com iburst" >> /etc/chrony/chrony.conf
+
+# Iniciar o serviço do chrony quando o contêiner for executado
+CMD ["chronyd", "-d"]
 
 ADD entrypoint.sh /entrypoint.sh
 ENTRYPOINT ["/entrypoint.sh"]
